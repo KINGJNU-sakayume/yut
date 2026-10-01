@@ -206,7 +206,8 @@ order matters: e.g. 티끌 모아 태산 (+N) before 한 걸음 천리 (×1.5) y
    and can expose `stateText` for the tooltip. Cursed talismans use `rarity: 'cursed'`,
    `pool: 'market'` and must set `downside`.
 3. Run `npm test` — `talismans.test.ts` checks that every effect entry points at a registered handler
-   for its hook and that cursed items show their downside. Add an interaction test for the new behaviour.
+   for its hook and that cursed items show their downside, and `content.test.ts` requires a scenario
+   proving that every talisman changes an observable value. Add a scenario for the new talisman there.
 
 ---
 
@@ -219,9 +220,11 @@ order matters: e.g. 티끌 모아 태산 (+N) before 한 걸음 천리 (×1.5) y
   lap worth ~1,000+, so its 80 / 120 / 160 opening targets would be cleared by any cash-out. The brief's
   table is kept as `BRIEF_TARGETS` in `src/data/targets.ts` next to the live table.
 - **Goblins move backwards** along the graph (도깨비는 거꾸로 걷는다) and act once per player turn
-  (after the base throw and all its extra throws are used). Intents can “aim” at an exposed group,
-  but the landing node is always public; respawned/new goblins rest for one goblin phase so nothing
-  unseen can capture you.
+  (after the base throw and all its extra throws are used). Intents can “aim” at an exposed group
+  (chance grows with the yard: 15–30% in yard 1 up to 60%), but the landing node is always public;
+  respawned/new goblins rest for one goblin phase so nothing unseen can capture you.
+- **Boss tiers**: yards 1–2 draw only gentle bosses (외눈, 엿장수, 길막이), yards 3–5 add 거꾸로 /
+  외톨이 / 붉은 탈, and the harsh 욕심 도깨비 tax appears from yard 6.
 - **Pieces at home are safe.** Cashed-out pieces stay finished for the board; if every piece has
   cashed out below the target the board is lost (the goal modal warns about this).
 - **Overkill bonus**: +1 coin each time a board's score doubles its target (max +3), so greed pays even
