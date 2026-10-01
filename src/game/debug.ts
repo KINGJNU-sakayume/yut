@@ -3,13 +3,35 @@
 import { getConsumable } from '../data/consumables'
 import { getTalismanDef } from '../data/talismans'
 import { spawnGoblin } from './board'
-import { NODE_MAP } from './boardGraph'
+import { NODE_MAP, forwardOptions } from './boardGraph'
 import { GOBLINS } from './config'
 import { rollGoblinIntent } from './ai/goblinIntent'
 import { EngineError, invariant } from './errors'
 import { newTalismanInstance } from './shop'
 import { findGroup, groupAt, pushLog } from './state'
 import type { DebugCommand, RunState } from './types'
+
+/** Shortest forward route from the start corner to a node (so Backdo behaves naturally). */
+function shortestRoute(target: string): string[] {
+  const prev = new Map<string, string | null>([['o0', null]])
+  const queue: { node: string; from: string | null; start: boolean }[] = [{ node: 'o0', from: null, start: true }]
+  while (queue.length > 0) {
+    const cur = queue.shift()!
+    if (cur.node === target) break
+    for (const opt of forwardOptions(cur.node, cur.from, true)) {
+      if (prev.has(opt.node) || opt.node === 'o0') continue
+      prev.set(opt.node, cur.node)
+      queue.push({ node: opt.node, from: cur.node, start: true })
+    }
+  }
+  const route: string[] = []
+  let at: string | null | undefined = target
+  while (at) {
+    route.unshift(at)
+    at = prev.get(at) ?? null
+  }
+  return route[0] === 'o0' ? route : ['o0', target]
+}
 
 export function applyDebug(run: RunState, command: DebugCommand): void {
   const board = run.board
@@ -59,7 +81,7 @@ export function applyDebug(run: RunState, command: DebugCommand): void {
       invariant(!other || other.id === g.id, '그 칸에는 다른 무리가 있습니다')
       g.zone = 'board'
       g.node = command.node
-      g.route = ['o0', command.node]
+      g.route = shortestRoute(command.node)
       pushLog(board, 'system', `[디버그] ${g.id} → ${command.node}`)
       return
     }

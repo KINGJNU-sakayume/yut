@@ -5,12 +5,12 @@ import { getTalismanDef } from '../data/talismans'
 import { allGoblinPlans, threatenedNodes, protectionReason, type GoblinPlan } from './ai/goblinIntent'
 import { applyMove, computeThrowSetup } from './board'
 import { LAP_ESCALATION, MAX_EXTRA_LAPS } from './config'
-import { isSuppressed } from './effects/effectEngine'
+import { isSuppressed, runHook, silentEnv } from './effects/effectEngine'
 import { legalMovesForResult, type LegalMoves } from './movement'
 import { lapTableFor, predictScore } from './scoring'
 import { cloneDeep, findGroup } from './state'
 import type { BoardState, Group, PendingResult, ResultKind, RunState, ScoreBreakdown } from './types'
-import { outcomeDistribution, type Distribution, type ThrowSetup } from './yut'
+import { baseThrowSetup, finalizeSetup, outcomeDistribution, type Distribution, type ThrowSetup } from './yut'
 
 export interface PendingView {
   result: PendingResult
@@ -154,3 +154,11 @@ export function sortedGroups(board: BoardState): Group[] {
   return [...board.groups].sort((a, b) => a.members[0] - b.members[0])
 }
 
+
+/** Outcome distribution for the 노름판 throw (the player's own sticks, no board effects). */
+export function gambleOdds(run: RunState): Distribution {
+  const setup = baseThrowSetup(run.sticks, [])
+  const ctx = { backProb: setup.backProb.slice(), hauntedSyncChance: 0 }
+  runHook(silentEnv(run, null), 'beforeThrow', ctx)
+  return outcomeDistribution(finalizeSetup({ ...setup, backProb: ctx.backProb, hauntedSyncChance: ctx.hauntedSyncChance }))
+}

@@ -7,7 +7,7 @@ import { getTrait } from '../data/pieceTraits'
 import { getTalismanDef } from '../data/talismans'
 import { TARGETS } from '../data/targets'
 import { allGoblinPlans, rollGoblinIntent, threatenedNodes } from './ai/goblinIntent'
-import { GOAL, SHORTCUT_ENTRIES, SHORTCUT_ENTRY_NAMES, cargoValue, isOuter, isShortcutEntryEdge, isShortcutNode } from './boardGraph'
+import { GOAL, NODE_MAP, SHORTCUT_ENTRIES, SHORTCUT_ENTRY_NAMES, cargoValue, isOuter, isShortcutEntryEdge, isShortcutNode } from './boardGraph'
 import {
   BOARD_KINDS,
   BOSS_TUNING,
@@ -558,7 +558,7 @@ export function applyMove(run: RunState, board: BoardState, resultId: number, gr
     stackedWith,
     fallback: option.fallback,
   }
-  const where = group.zone === 'home' ? '집' : group.zone === 'goal' ? '참먹이(도착)' : (group.node ?? '')
+  const where = group.zone === 'home' ? '집' : group.zone === 'goal' ? '참먹이(도착)' : (NODE_MAP[group.node ?? '']?.name ?? '')
   pushLog(board, 'move', `${groupLabel(group)} ${RESULT_NAMES[result.kind]}${option.fallback ? '(출발 빽도)' : ''} → ${where} · 화물 +${cargoGained} · 기세 +${momentumGained}`)
 
   if (group.zone === 'goal') {
@@ -635,7 +635,7 @@ export function goalDecision(run: RunState, board: BoardState, choice: 'cashOut'
     if (board.goblins.length < GOBLINS.maxCount) {
       const g = spawnGoblin(board, { boss: false, permanent: false, resting: true })
       board.flags.extraGoblinsFromLaps += 1
-      pushLog(board, 'goblin', `욕심 냄새를 맡고 도깨비가 하나 더 나타났다 (${g.node})`)
+      pushLog(board, 'goblin', `욕심 냄새를 맡고 도깨비가 하나 더 나타났다 (${NODE_MAP[g.node]?.name ?? g.node})`)
     }
   }
   if (group.laps === LAP_ESCALATION.distanceBonusAtLap) {
