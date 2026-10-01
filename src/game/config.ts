@@ -89,8 +89,10 @@ export const GOBLINS = {
   /** Spawn nodes in priority order. Goblin i prefers SPAWNS[i % length]. */
   spawns: ['o10', 'c', 'o15', 'dB1', 'dC1', 'o8'] as NodeId[],
   /** Chance that a goblin aims its (publicly shown) intent at a player group within reach. */
-  aimChance: { small: 0.25, big: 0.35, boss: 0.45 } as Record<BoardKind, number>,
+  aimChance: { small: 0.15, big: 0.22, boss: 0.3 } as Record<BoardKind, number>,
+  aimChancePerYard: 0.03,
   aimChancePerDebt: 0.05,
+  aimChanceMax: 0.6,
   bossCargoMult: 3,
   /** 붉은 탈: cargo multiplier gained each time the goblin is captured, and max strength. */
   redMaskCargoGrowth: 0.5,

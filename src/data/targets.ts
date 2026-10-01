@@ -16,7 +16,7 @@ export const BRIEF_TARGETS: readonly (readonly [number, number, number])[] = [
 ]
 
 export const TARGETS: readonly (readonly [number, number, number])[] = [
-  [500, 800, 1200],
+  [400, 700, 1000],
   [1500, 2200, 3000],
   [4000, 5500, 7500],
   [10000, 14000, 19000],

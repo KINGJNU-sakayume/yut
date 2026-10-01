@@ -32,7 +32,14 @@ export function GameScreen({ run, store, onSettings }: GameScreenProps) {
       {!ended && <TopHud run={run} board={run.phase === 'board' || run.phase === 'boardEnd' ? run.board : null} onMenu={() => setMenu(true)} onCopySeed={copySeed} />}
       {run.phase === 'wager' && <WagerScreen run={run} dispatch={store.dispatch} />}
       {(run.phase === 'board' || run.phase === 'boardEnd') && run.board && (
-        <BoardScreen key={run.board.index} run={run} board={run.board} dispatch={store.dispatch} dispatchIf={store.dispatchIf} />
+        <BoardScreen
+          key={run.board.index}
+          run={run}
+          board={run.board}
+          dispatch={store.dispatch}
+          dispatchIf={store.dispatchIf}
+          showTip={run.boardIndex === 0 && store.meta.stats.runs === 0}
+        />
       )}
       {run.phase === 'shop' && <ShopScreen run={run} dispatch={store.dispatch} />}
       {run.phase === 'event' && <EventScreen run={run} dispatch={store.dispatch} />}

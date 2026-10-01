@@ -36,6 +36,8 @@ export interface MovePreview {
   coinsDelta: number
   newCargo: number
   newMomentum: number
+  /** Other player groups that would become exposed (unprotected landing) only because of this move. */
+  newlyThreatened: number
 }
 
 /** Simulate a move on a clone (stops before the goblin phase, so no hidden rolls leak). */
@@ -57,6 +59,16 @@ export function previewMove(run: RunState, resultId: number, groupId: string, pa
   const group = findGroup(after, rec.groupId)
   const threats = threatenedNodes(clone, after)
   const destThreatened = Boolean(group?.zone === 'board' && group.node && threats.has(group.node))
+  const before = threatenedNodes(run, run.board)
+  const newlyThreatened = after.groups.filter(
+    (g) =>
+      g.id !== rec.groupId &&
+      g.zone === 'board' &&
+      g.node != null &&
+      threats.has(g.node) &&
+      !before.has(g.node) &&
+      !protectionReason(clone, after, g),
+  ).length
   return {
     cargoGained: rec.cargoGained + rec.stolen,
     momentumGained: rec.momentumGained,
@@ -72,6 +84,7 @@ export function previewMove(run: RunState, resultId: number, groupId: string, pa
     coinsDelta: clone.coins - run.coins,
     newCargo: group?.cargo ?? 0,
     newMomentum: group?.momentum ?? 0,
+    newlyThreatened,
   }
 }
 

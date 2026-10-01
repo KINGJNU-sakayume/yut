@@ -4,6 +4,8 @@ export interface BossDef {
   id: string
   name: string
   glyph: string
+  /** 1 = gentle (can appear from yard 1), 2 = from yard 3, 3 = from yard 6. */
+  tier: 1 | 2 | 3
   /** One-line rule shown before the board starts and in the HUD. */
   rule: string
   detail: string
@@ -27,6 +29,7 @@ export interface BossDef {
 export const BOSSES: readonly BossDef[] = [
   {
     id: 'oneEye',
+    tier: 1,
     name: '외눈 도깨비',
     glyph: '目',
     rule: '모는 5칸 그대로 가지만 추가 던지기를 주지 않는다.',
@@ -35,6 +38,7 @@ export const BOSSES: readonly BossDef[] = [
   },
   {
     id: 'upsideDown',
+    tier: 2,
     name: '거꾸로 도깨비',
     glyph: '倒',
     rule: '도가 나오면 빽도가 된다. (빽도 효과는 그대로 발동)',
@@ -43,6 +47,7 @@ export const BOSSES: readonly BossDef[] = [
   },
   {
     id: 'loner',
+    tier: 2,
     name: '외톨이 도깨비',
     glyph: '孤',
     rule: '가장 큰 내 무리의 말 1개가 늘 때마다 모든 도깨비 이동 +1.',
@@ -51,6 +56,7 @@ export const BOSSES: readonly BossDef[] = [
   },
   {
     id: 'greedy',
+    tier: 3,
     name: '욕심 도깨비',
     glyph: '貪',
     rule: '이 판의 첫 퇴근은 세금으로 60%를 빼앗긴다. 추가 바퀴 1번마다 세금 20%p 감소.',
@@ -59,6 +65,7 @@ export const BOSSES: readonly BossDef[] = [
   },
   {
     id: 'blocker',
+    tier: 1,
     name: '길막이 도깨비',
     glyph: '塞',
     rule: '모서리 지름길 하나가 막힌다. 다음에 막힐 길은 미리 알려준다 (기본 던지기 3번마다 교대).',
@@ -68,6 +75,7 @@ export const BOSSES: readonly BossDef[] = [
   },
   {
     id: 'taffy',
+    tier: 1,
     name: '엿장수 도깨비',
     glyph: '飴',
     rule: '가장 비싼 부적 하나가 처음 기본 던지기 3번 동안 엿에 붙어 작동하지 않는다.',
@@ -76,6 +84,7 @@ export const BOSSES: readonly BossDef[] = [
   },
   {
     id: 'redMask',
+    tier: 2,
     name: '붉은 탈',
     glyph: '赤',
     rule: '잡힌 도깨비는 더 강해져서(이동 +1, 최대 +2) 돌아오고, 현상금(화물)도 50%씩 커진다.',
@@ -84,6 +93,13 @@ export const BOSSES: readonly BossDef[] = [
     unlock: 'boss:redMask',
   },
 ]
+
+/** The highest boss tier allowed in a yard. */
+export function maxBossTier(yard: number): 1 | 2 | 3 {
+  if (yard <= 2) return 1
+  if (yard <= 5) return 2
+  return 3
+}
 
 export const BOSS_MAP: Readonly<Record<string, BossDef>> = Object.fromEntries(BOSSES.map((b) => [b.id, b]))
 

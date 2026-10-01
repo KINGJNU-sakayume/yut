@@ -130,16 +130,18 @@ export function GroupInfo({ run, group }: { run: RunState; group: Group | null }
 
 export function MoveOptions({
   options,
+  illegal = [],
   focused,
   onChoose,
   onFocus,
 }: {
   options: PathOptionView[]
+  illegal?: { label: string; reason: string }[]
   focused: number | null
   onChoose: (i: number) => void
   onFocus: (i: number | null) => void
 }) {
-  if (options.length === 0) return null
+  if (options.length === 0 && illegal.length === 0) return null
   return (
     <section className="paper-panel p-2">
       <h3 className="mb-1 font-serif text-sm font-black">{T.play.pickPath}</h3>
@@ -172,17 +174,24 @@ export function MoveOptions({
                   ) : p.destThreatened ? (
                     <span className="chip">{T.play.protected(p.destProtected ?? '')}</span>
                   ) : null}
+                  {p.newlyThreatened > 0 && <span className="chip border-goblin text-goblin">⚠ {T.play.newThreats(p.newlyThreatened)}</span>}
                 </span>
               )}
             </button>
           )
         })}
+        {illegal.map((il, i) => (
+          <div key={`illegal-${i}`} className="rounded-lg border-2 border-dashed border-ink/30 px-2 py-1 text-sm text-ink-soft" aria-disabled="true">
+            <span className="font-serif font-black line-through">→ {il.label}</span>
+            <span className="block text-[11px]">🚫 {il.reason}</span>
+          </div>
+        ))}
       </div>
     </section>
   )
 }
 
-export function GoblinIntents({ plans, board }: { plans: GoblinPlan[]; board: BoardState }) {
+export function GoblinIntents({ plans, board, onFocus }: { plans: GoblinPlan[]; board: BoardState; onFocus?: (goblinId: string | null) => void }) {
   return (
     <section className="paper-panel p-2 text-xs" aria-label={T.play.threats}>
       <h3 className="mb-1 font-serif text-sm font-black text-goblin">👹 {T.play.threats}</h3>
@@ -192,7 +201,15 @@ export function GoblinIntents({ plans, board }: { plans: GoblinPlan[]; board: Bo
           if (!goblin) return null
           const target = plan.targetGroupId ? board.groups.find((g) => g.id === plan.targetGroupId) : null
           return (
-            <li key={plan.goblinId} className="rounded border border-goblin/30 bg-goblin/5 px-1.5 py-1">
+            <li
+              key={plan.goblinId}
+              className="rounded border border-goblin/30 bg-goblin/5 px-1.5 py-1 hover:bg-goblin/15 focus:bg-goblin/15"
+              tabIndex={0}
+              onMouseEnter={() => onFocus?.(plan.goblinId)}
+              onMouseLeave={() => onFocus?.(null)}
+              onFocus={() => onFocus?.(plan.goblinId)}
+              onBlur={() => onFocus?.(null)}
+            >
               <div className="flex flex-wrap items-baseline gap-x-1.5">
                 <b>{goblin.boss ? '도깨비 대장' : '도깨비'}</b>
                 <span className="text-ink-soft">@{nodeName(goblin.node)}</span>

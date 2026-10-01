@@ -1,6 +1,6 @@
 // Run-level flow: run creation, boss schedule, wager → board → board end → event/shop → next board.
 
-import { BOSSES } from '../data/bosses'
+import { BOSSES, maxBossTier } from '../data/bosses'
 import { getEvent } from '../data/events'
 import { startBoard } from './board'
 import { BOARD_KINDS, ECONOMY, RUN, SAVE_VERSION, STICKS } from './config'
@@ -21,14 +21,19 @@ export interface NewRunOptions {
 
 export const TOTAL_BOARDS = RUN.yards * RUN.boardsPerYard
 
+/**
+ * One boss per yard, drawn without repeats where possible. Gentle bosses open the run;
+ * harsher ones (higher tier) only appear in later yards.
+ */
 function scheduleBosses(run: RunState): string[] {
-  const pool = BOSSES.filter((b) => isUnlocked(run, b.unlock)).map((b) => b.id)
+  const unlocked = BOSSES.filter((b) => isUnlocked(run, b.unlock))
   const out: string[] = []
-  let bag: string[] = []
-  for (let yard = 0; yard < RUN.yards; yard++) {
-    if (bag.length === 0) bag = pool.filter((id) => id !== out[out.length - 1])
-    const i = drawInt(run.rng, 'run', bag.length)
-    out.push(bag.splice(i, 1)[0])
+  for (let yard = 1; yard <= RUN.yards; yard++) {
+    const allowed = unlocked.filter((b) => b.tier <= maxBossTier(yard))
+    const fresh = allowed.filter((b) => !out.includes(b.id))
+    const notLast = allowed.filter((b) => b.id !== out[out.length - 1])
+    const pool = fresh.length > 0 ? fresh : notLast.length > 0 ? notLast : allowed
+    out.push(pool[drawInt(run.rng, 'run', pool.length)].id)
   }
   return out
 }

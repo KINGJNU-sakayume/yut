@@ -20,6 +20,7 @@ interface BoardScreenProps {
   board: BoardState
   dispatch: (a: GameAction) => void
   dispatchIf: (pred: (r: RunState) => boolean, a: GameAction) => void
+  showTip?: boolean
 }
 
 function optionLabel(view: { option: PathOptionView['option'] }): string {
@@ -30,8 +31,10 @@ function optionLabel(view: { option: PathOptionView['option'] }): string {
   return o.branch ? `${BRANCH_LABELS[o.branch]} · ${name}` : name
 }
 
-export function BoardScreen({ run, board, dispatch, dispatchIf }: BoardScreenProps) {
+export function BoardScreen({ run, board, dispatch, dispatchIf, showTip = false }: BoardScreenProps) {
   const { reducedMotion } = useUiSettings()
+  const [tipOpen, setTipOpen] = useState(showTip)
+  const [focusedGoblinId, setFocusedGoblinId] = useState<string | null>(null)
   const [selectedResultId, setSelectedResultId] = useState<number | null>(null)
   const [pickedGroupId, setSelectedGroupId] = useState<string | null>(null)
   const [focusedOption, setFocusedOption] = useState<number | null>(null)
@@ -61,6 +64,12 @@ export function BoardScreen({ run, board, dispatch, dispatchIf }: BoardScreenPro
       label: optionLabel({ option }),
     }))
   }, [activeView, selectedGroupId, run, board.phase])
+
+  const illegalViews = useMemo(() => {
+    if (!activeView || !selectedGroupId || board.phase !== 'play') return []
+    const move = activeView.legal.moves.find((m) => m.groupId === selectedGroupId)
+    return (move?.illegal ?? []).map((il) => ({ label: optionLabel(il), reason: il.reason }))
+  }, [activeView, selectedGroupId, board.phase])
 
   const choose = (index: number) => {
     if (!activeView || !selectedGroupId) return
@@ -109,6 +118,8 @@ export function BoardScreen({ run, board, dispatch, dispatchIf }: BoardScreenPro
             selectedGroupId={selectedGroupId}
             options={optionViews}
             focusedOption={focusedOption}
+            focusedGoblinId={focusedGoblinId}
+            onFocusGoblin={setFocusedGoblinId}
             onSelectGroup={(id) => {
               setSelectedGroupId(id)
               setFocusedOption(null)
@@ -144,6 +155,21 @@ export function BoardScreen({ run, board, dispatch, dispatchIf }: BoardScreenPro
       </div>
 
       <aside className="flex min-w-0 flex-col gap-2">
+        {tipOpen && (
+          <section className="paper-panel border-spirit p-2 text-xs" aria-label={T.play.tipTitle}>
+            <div className="flex items-center justify-between">
+              <h3 className="font-serif text-sm font-black text-jade">💡 {T.play.tipTitle}</h3>
+              <button type="button" className="btn btn-paper px-2 py-0.5 text-xs" onClick={() => setTipOpen(false)}>
+                {T.play.tipClose}
+              </button>
+            </div>
+            <ul className="mt-1 space-y-0.5">
+              {T.play.tip.map((line) => (
+                <li key={line}>{line}</li>
+              ))}
+            </ul>
+          </section>
+        )}
         <PendingResults
           views={views}
           selectedId={activeResultId}
@@ -157,9 +183,9 @@ export function BoardScreen({ run, board, dispatch, dispatchIf }: BoardScreenPro
         {views.length > 0 && selectedGroupId && !legalGroupIds.has(selectedGroupId) && (
           <p className="px-1 text-xs text-paper/80">이 무리는 이 결과로 움직일 수 없습니다. 반짝이는 말을 고르세요.</p>
         )}
-        <MoveOptions options={optionViews} focused={focusedOption} onChoose={choose} onFocus={setFocusedOption} />
+        <MoveOptions options={optionViews} illegal={illegalViews} focused={focusedOption} onChoose={choose} onFocus={setFocusedOption} />
         <GroupInfo run={run} group={selectedGroup} />
-        <GoblinIntents plans={plans} board={board} />
+        <GoblinIntents plans={plans} board={board} onFocus={setFocusedGoblinId} />
         <LogPanel board={board} />
       </aside>
 

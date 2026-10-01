@@ -130,7 +130,8 @@ export function threatenedNodes(run: RunState, board: BoardState): Set<NodeId> {
 }
 
 export function aimChance(run: RunState, board: BoardState): number {
-  return Math.min(0.9, GOBLINS.aimChance[board.kind] + GOBLINS.aimChancePerDebt * run.debtLevel)
+  const chance = GOBLINS.aimChance[board.kind] + GOBLINS.aimChancePerYard * (board.yard - 1) + GOBLINS.aimChancePerDebt * run.debtLevel
+  return Math.min(GOBLINS.aimChanceMax, chance)
 }
 
 /**

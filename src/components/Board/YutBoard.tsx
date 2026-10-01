@@ -30,6 +30,8 @@ interface YutBoardProps {
   onSelectGroup: (id: string) => void
   onChooseOption: (index: number) => void
   onFocusOption: (index: number | null) => void
+  focusedGoblinId?: string | null
+  onFocusGoblin?: (id: string | null) => void
 }
 
 const STEP_MS = 110
@@ -54,7 +56,7 @@ function polyPoints(ids: string[], dx = 0, dy = 0): string {
 const CORNER_LABEL: Record<string, string> = { o0: '참먹이', o5: '모', o10: '뒷모', o15: '찌모', c: '방' }
 
 export function YutBoard(props: YutBoardProps) {
-  const { run, board, plans, legalGroupIds, selectedGroupId, options, focusedOption, onSelectGroup, onChooseOption, onFocusOption } = props
+  const { run, board, plans, legalGroupIds, selectedGroupId, options, focusedOption, onSelectGroup, onChooseOption, onFocusOption, focusedGoblinId, onFocusGoblin } = props
   const { reducedMotion } = useUiSettings()
 
   // Player move animation (the state is already final; we only replay the path).
@@ -196,17 +198,19 @@ export function YutBoard(props: YutBoardProps) {
           const goblin = board.goblins.find((g) => g.id === plan.goblinId)
           if (!goblin) return null
           const off = (i % 3) * 0.7 - 0.7
+          const focus = focusedGoblinId === plan.goblinId
+          const dimmed = focusedGoblinId != null && !focus
           return (
             <polyline
               key={`threat-${plan.goblinId}`}
               points={polyPoints([goblin.node, ...plan.path], off, off)}
               fill="none"
               stroke="#a8261c"
-              strokeWidth="0.8"
+              strokeWidth={focus ? 1.6 : 0.8}
               strokeDasharray="1.6 1"
               strokeLinejoin="round"
               markerEnd="url(#arrow-red)"
-              opacity="0.9"
+              opacity={dimmed ? 0.3 : 0.9}
             />
           )
         })}
@@ -300,6 +304,8 @@ export function YutBoard(props: YutBoardProps) {
             key={goblin.id}
             style={{ transform: `translate(${pos(at).x + dx}px, ${pos(at).y}px)`, transition: reducedMotion ? undefined : `transform ${STEP_MS}ms linear` }}
             aria-label={`${goblin.boss ? '도깨비 대장' : '도깨비'} — ${pos(at).name}, 화물 ${goblin.cargo}`}
+            onMouseEnter={() => onFocusGoblin?.(goblin.id)}
+            onMouseLeave={() => onFocusGoblin?.(null)}
           >
             <g transform="scale(1.05)">
               <GoblinMask boss={goblin.boss} dim={goblin.resting} />

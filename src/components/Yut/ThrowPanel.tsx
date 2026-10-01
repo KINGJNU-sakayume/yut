@@ -40,6 +40,11 @@ export function ThrowPanel({ run, board, dispatch }: ThrowPanelProps) {
         >
           🎋 {availability.can && availability.kind === 'extra' ? T.play.throwExtra : T.play.throw}
         </button>
+        {board.extraThrows > 0 && (
+          <span className="self-start rounded-full border border-spirit/70 bg-spirit/15 px-2 py-0.5 text-[11px] font-bold text-spirit" aria-live="polite">
+            ✦ {T.play.extraThrows(board.extraThrows)}
+          </span>
+        )}
         {!availability.can && board.phase === 'play' && <span className="text-[11px] text-paper/60">{availability.reason}</span>}
         {rewind && (
           <button type="button" className="btn btn-ghost border-spirit text-xs text-spirit" onClick={() => dispatch({ type: 'REWIND' })}>

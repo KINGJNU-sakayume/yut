@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { BOSS_MAP, maxBossTier } from '../../data/bosses'
 import { getTalismanDef, talismanSellValue } from '../../data/talismans'
 import { botAction } from '../__sim__/bot'
 import { SAVE_VERSION, rerollCost } from '../config'
@@ -44,9 +45,14 @@ describe('seeded runs', () => {
     expect(JSON.stringify(a.board?.history ?? a.history)).not.toBe(JSON.stringify(b.board?.history ?? b.history))
   })
 
-  it('boss schedule is fixed by the seed', () => {
+  it('boss schedule is fixed by the seed and opens with gentle bosses', () => {
     expect(createRun({ seed: 'x' }).bosses).toEqual(createRun({ seed: 'x' }).bosses)
-    expect(createRun({ seed: 'x' }).bosses).toHaveLength(8)
+    for (let i = 0; i < 30; i++) {
+      const bosses = createRun({ seed: `boss-${i}`, unlocked: ALL_UNLOCKS }).bosses
+      expect(bosses).toHaveLength(8)
+      bosses.forEach((id, yardIndex) => expect(BOSS_MAP[id].tier).toBeLessThanOrEqual(maxBossTier(yardIndex + 1)))
+      for (let y = 1; y < 8; y++) expect(bosses[y]).not.toBe(bosses[y - 1])
+    }
   })
 })
 
