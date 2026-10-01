@@ -751,6 +751,10 @@ export function rewindTurn(run: RunState, board: BoardState): BoardState {
   const inst = ownsEffectKind(run, board, 'rewindTurn')!
   const restored = restoreSnapshot(run, board, board.rewindSnapshot!)
   restored.flags.rewindUsed = true
+  // Presentation records from the restored past must not replay as fresh animations.
+  restored.lastMove = null
+  restored.lastGoblinPhase = null
+  restored.lastCashOut = null
   const restoredInst = run.talismans.find((t) => t.uid === inst.uid)
   if (restoredInst) restoredInst.usedThisBoard += 1
   restored.stats.triggers[inst.defId] = (restored.stats.triggers[inst.defId] ?? 0) + 1

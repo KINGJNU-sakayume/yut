@@ -333,6 +333,8 @@ describe('legendary: 시간 역행', () => {
     expect(groupOf(run, 0).zone).toBe('home')
     expect(board.pending.map((p) => p.kind)).toEqual(['geol'])
     expect(board.flags.rewindUsed).toBe(true)
+    expect(board.lastMove).toBeNull()
+    expect(board.lastCashOut).toBeNull()
     // The snapshot predates the Backdo's base throw, so that throw is refunded.
     expect(board.baseThrowsLeft).toBe(throwsBefore)
     // Once per board.
