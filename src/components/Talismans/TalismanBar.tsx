@@ -23,7 +23,7 @@ export function TalismanBar({ run, board, dispatch, compact }: TalismanBarProps)
           ← 왼쪽부터 발동
         </span>
       </div>
-      <div className="flex items-start gap-1.5">
+      <div className="flex items-start gap-1 sm:gap-1.5">
         {slots.map((inst, i) =>
           inst ? (
             <TalismanCard
@@ -40,7 +40,7 @@ export function TalismanBar({ run, board, dispatch, compact }: TalismanBarProps)
           ) : (
             <div
               key={`empty-${i}`}
-              className={`flex items-center justify-center rounded-md border-2 border-dashed border-paper/20 text-[10px] text-paper/30 ${compact ? 'h-[74px] w-[58px]' : 'h-[92px] w-[70px]'}`}
+              className={`flex items-center justify-center rounded-md border-2 border-dashed border-paper/20 text-[10px] text-paper/30 ${compact ? 'h-[74px] w-[58px]' : 'h-[74px] w-[56px] sm:h-[92px] sm:w-[70px]'}`}
             >
               {T.talisman.empty}
             </div>

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { BRANCH_LABELS, NODE_MAP } from '../game/boardGraph'
 import { throwAvailability } from '../game/board'
 import { goblinPlansView, pendingViews, previewMove } from '../game/selectors'
@@ -83,16 +83,18 @@ export function BoardScreen({ run, board, dispatch, dispatchIf }: BoardScreenPro
     return () => window.removeEventListener('keydown', onKey)
   }, [board, dispatch])
 
-  // The goblin phase resolves on its own after the player's move animation.
+  const showCashOut = board.lastCashOut && board.lastCashOut.seq !== cashOutDone ? board.lastCashOut : null
+  const showCashOutSeq = showCashOut?.seq ?? null
+  const dismissCashOut = useCallback(() => setCashOutDone(showCashOutSeq), [showCashOutSeq])
+
+  // The goblin phase resolves on its own after the player's move animation (paused during score juice).
   const moveLen = board.lastMove?.path.length ?? 0
   useEffect(() => {
-    if (board.phase !== 'goblinTurn') return
+    if (board.phase !== 'goblinTurn' || showCashOutSeq != null) return
     const delay = reducedMotion ? 250 : Math.min(1200, moveLen * 110 + 450)
     const timer = window.setTimeout(() => dispatchIf((r) => r.board?.phase === 'goblinTurn', { type: 'RESOLVE_GOBLINS' }), delay)
     return () => window.clearTimeout(timer)
-  }, [board.phase, moveLen, reducedMotion, dispatchIf])
-
-  const showCashOut = board.lastCashOut && board.lastCashOut.seq !== cashOutDone ? board.lastCashOut : null
+  }, [board.phase, moveLen, reducedMotion, dispatchIf, showCashOutSeq])
   const lastGoblinCaptures = board.lastGoblinPhase?.moves.filter((m) => m.captured.length > 0) ?? []
 
   return (
@@ -168,7 +170,7 @@ export function BoardScreen({ run, board, dispatch, dispatchIf }: BoardScreenPro
       </div>
 
       {board.phase === 'goalDecision' && !showCashOut && <GoalDecisionModal run={run} board={board} dispatch={dispatch} />}
-      {showCashOut && <CashOutOverlay record={showCashOut} onDone={() => setCashOutDone(showCashOut.seq)} />}
+      {showCashOut && <CashOutOverlay record={showCashOut} onDone={dismissCashOut} />}
       {run.phase === 'boardEnd' && run.boardEnd && !showCashOut && <BoardEndModal run={run} summary={run.boardEnd} dispatch={dispatch} />}
     </div>
   )

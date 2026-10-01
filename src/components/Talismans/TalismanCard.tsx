@@ -97,12 +97,12 @@ export function TalismanCard({ inst, defId, flashKey, suppressed, index = 0, cou
           }
         }}
         className={`talisman-paper relative flex flex-col items-center justify-between rounded-md border-2 px-1 py-1 ${RARITY_STYLE[def.rarity]} ${
-          compact ? 'h-[74px] w-[58px]' : 'h-[92px] w-[70px]'
+          compact ? 'h-[74px] w-[58px]' : 'h-[74px] w-[56px] sm:h-[92px] sm:w-[70px]'
         } ${flashKey != null ? 'animate-flash' : ''} ${dragOver ? 'ring-2 ring-spirit' : ''}`}
       >
         <span className="absolute left-1 top-0.5 text-[9px] font-bold text-goblin-dark/70">{index + 1}</span>
         {inst && inst.power > 1 && <span className="absolute right-0.5 top-0.5 rounded bg-indigo px-0.5 text-[9px] font-black text-paper">×2</span>}
-        <span className={`font-serif font-black leading-none text-goblin ${compact ? 'mt-2 text-2xl' : 'mt-2.5 text-3xl'}`} aria-hidden>
+        <span className={`font-serif font-black leading-none text-goblin ${compact ? 'mt-2 text-2xl' : 'mt-2 text-2xl sm:mt-2.5 sm:text-3xl'}`} aria-hidden>
           {def.glyph}
         </span>
         <span className="w-full truncate text-center font-serif text-[10px] font-black leading-tight text-ink">{def.name}</span>

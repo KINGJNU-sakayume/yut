@@ -2,7 +2,7 @@ import type { Toast } from '../../hooks/useGameStore'
 
 export function Toasts({ toasts }: { toasts: Toast[] }) {
   return (
-    <div className="pointer-events-none fixed inset-x-0 top-3 z-50 flex flex-col items-center gap-2 px-3" aria-live="polite">
+    <div className="pointer-events-none fixed right-3 top-16 z-50 flex max-w-[min(92vw,380px)] flex-col items-end gap-2" aria-live="polite">
       {toasts.map((t) => (
         <div
           key={t.id}
