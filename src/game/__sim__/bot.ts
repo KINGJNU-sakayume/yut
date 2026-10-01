@@ -1,5 +1,6 @@
 // A simple heuristic player used for fuzz tests and balance simulation. Not used by the UI.
 
+import { threatenedNodes } from '../ai/goblinIntent'
 import { throwAvailability } from '../board'
 import { hasAnyLegalMove } from '../movement'
 import { goalDecisionView, pendingViews, previewMove } from '../selectors'
@@ -28,6 +29,8 @@ export interface BotOptions {
   /** Max extra laps the bot is willing to take when a cash-out would not clear the board. */
   greed?: number
   buyTalismans?: boolean
+  /** Minimum base throws left to risk another lap. */
+  lapThrows?: number
 }
 
 export function botAction(run: RunState, opts: BotOptions = {}): GameAction | null {
@@ -62,11 +65,12 @@ export function botAction(run: RunState, opts: BotOptions = {}): GameAction | nu
     const view = goalDecisionView(run, board)
     if (!view) return { type: 'GOAL_DECISION', choice: 'cashOut' }
     if (view.clears || !view.canLap || view.group.laps >= greed) return { type: 'GOAL_DECISION', choice: 'cashOut' }
-    if (board.baseThrowsLeft >= 5) return { type: 'GOAL_DECISION', choice: 'oneMoreLap' }
+    if (board.baseThrowsLeft >= (opts.lapThrows ?? 7)) return { type: 'GOAL_DECISION', choice: 'oneMoreLap' }
     return { type: 'GOAL_DECISION', choice: 'cashOut' }
   }
   if (board.pending.length > 0) {
     let best: { action: GameAction; value: number } | null = null
+    const threatsNow = threatenedNodes(run, board)
     for (const view of pendingViews(run, board)) {
       if (!hasAnyLegalMove(view.legal)) return { type: 'DISCARD_RESULT', resultId: view.result.id }
       for (const move of view.legal.moves) {
@@ -74,14 +78,17 @@ export function botAction(run: RunState, opts: BotOptions = {}): GameAction | nu
         move.options.forEach((option, pathIndex) => {
           const p = previewMove(run, view.result.id, move.groupId, pathIndex)
           if (!p) return
-          let value = p.cargoGained + p.momentumGained * 4 + p.captured * 40 + (p.reachesGoal ? 120 : 0)
-          if (p.stackedWith) value += 25 * p.stackSize
-          if (p.destThreatened && !p.destProtected) value -= p.newCargo + 40
-          if (group.zone === 'board') value += 5
+          const weight = 4 + (group.cargo + group.momentum * 5) / 25
+          let value = p.cargoGained + p.momentumGained * 4 + p.captured * 40 + p.stolen + (p.reachesGoal ? 150 + group.cargo : 0)
+          if (p.stackedWith) value += 15 * p.stackSize
+          if (p.destThreatened && !p.destProtected) value -= (p.newCargo + 60) * p.stackSize
+          if (p.newlyThreatened > 0) value -= 40 * p.newlyThreatened
+          const exposed = group.zone === 'board' && group.node != null && threatsNow.has(group.node)
+          if (exposed && !(p.destThreatened && !p.destProtected)) value += group.cargo + 60 * group.members.length
           const before = group.zone === 'home' ? HOME_DIST : (DIST[group.node ?? ''] ?? HOME_DIST)
           const after = p.reachesGoal ? 0 : p.toHome ? HOME_DIST : (DIST[p.destination ?? ''] ?? HOME_DIST)
-          value += (before - after) * 6 * Math.min(4, group.members.length)
-          if (option.branch === 'shortcut' || option.branch === 'toGoal') value += 15
+          value += (before - after) * weight
+          if (option.branch === 'shortcut' || option.branch === 'toGoal') value += 10
           if (!best || value > best.value) best = { action: { type: 'MOVE', resultId: view.result.id, groupId: move.groupId, pathIndex }, value }
         })
       }

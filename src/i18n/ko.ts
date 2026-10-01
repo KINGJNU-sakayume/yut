@@ -55,7 +55,7 @@ export const T = {
     bossRule: '대장 규칙',
     names: { safe: '안전', standard: '보통', allIn: '모 아니면 도' } as Record<string, string>,
     desc: {
-      safe: '던지기가 넉넉하다. 대신 보상이 줄어든다.',
+      safe: '던지기가 넉넉하다. 대신 보상이 줄어든다. 처음이라면 추천.',
       standard: '평범한 한 판.',
       allIn: '던지기가 적다. 깨면 보상이 크고 엽전을 더 받는다.',
     } as Record<string, string>,

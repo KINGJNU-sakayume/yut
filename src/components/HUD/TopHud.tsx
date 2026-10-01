@@ -66,6 +66,7 @@ export function TopHud({ run, board, onMenu, onCopySeed }: TopHudProps) {
           <span className="flex items-center gap-1 rounded-md border border-goblin bg-goblin/25 px-2 py-1 text-xs font-bold text-[#ffd3c9]">
             <span className="font-serif text-base">{boss.glyph}</span> {boss.name}
           </span>
+          <span className="mt-0.5 line-clamp-2 block text-[10px] leading-tight text-[#ffd3c9]/80">{boss.rule}</span>
           <div className="paper-panel pointer-events-none invisible absolute right-0 top-full z-30 mt-1 w-72 p-2 text-xs opacity-0 group-focus:visible group-focus:opacity-100 group-hover:visible group-hover:opacity-100">
             <b className="font-serif">{boss.name}</b>
             <p className="mt-1 font-bold text-goblin">{boss.rule}</p>

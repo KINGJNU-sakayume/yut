@@ -62,7 +62,7 @@ describe.skipIf(!process.env.SIM)('balance simulation', () => {
       let run = createRun({ seed: `run-${i}` })
       let guard = 0
       while (guard++ < 20000) {
-        const next = step(run, { greed: 1 })
+        const next = step(run, { greed: Number(process.env.GREED ?? 1), wager: (process.env.WAGER as 'safe' | 'standard' | 'allIn' | undefined) ?? 'standard' })
         if (!next) break
         run = next
       }

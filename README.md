@@ -96,6 +96,7 @@ npm run typecheck    # tsc -b
 npm run build        # typecheck + production build into dist/
 npm run preview      # serve dist/
 npm run sim          # balance simulation with a heuristic bot (slow; prints score percentiles)
+                     # options: WAGER=safe|standard|allIn GREED=0..3 npm run sim
 ```
 
 URL options: `?seed=12345` pre-fills the run seed, `?debug=1` shows the debug panel in production
@@ -229,6 +230,10 @@ order matters: e.g. 티끌 모아 태산 (+N) before 한 걸음 천리 (×1.5) y
   cashed out below the target the board is lost (the goal modal warns about this).
 - **Overkill bonus**: +1 coin each time a board's score doubles its target (max +3), so greed pays even
   when the board would already be cleared.
+- **Simulation snapshot** (heuristic bot, 200 runs, no human-level synergy planning): with the 안전 wager
+  ~4.5% of runs fail inside yard 1 and runs typically end in yards 3–6; with 보통 most failures are
+  boards where no group reached 참먹이 in time. Strong builds at yard 8 show a heavy-tailed score
+  distribution (bot p90 ≈ 100–190K, max ≈ 0.5–1.2M), which the final targets (260K / 360K / 500K) sit inside.
 - **Stacks keep the larger lap count**, the mover's route and the union of visited nodes.
 
 Remaining work is mostly balance and content: late-yard targets and talisman numbers were tuned with a

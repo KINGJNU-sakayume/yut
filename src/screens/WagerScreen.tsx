@@ -11,7 +11,8 @@ export function WagerScreen({ run, dispatch }: { run: RunState; dispatch: (a: Ga
   const index = run.boardIndex
   const yard = yardOf(index)
   const kind = (['small', 'big', 'boss'] as const)[index % 3]
-  const boss = kind === 'boss' ? getBoss(run.bosses[yard - 1]) : null
+  const yardBoss = getBoss(run.bosses[yard - 1])
+  const boss = kind === 'boss' ? yardBoss : null
   const goblins = Math.min(GOBLINS.maxCount, GOBLINS.baseCount + run.mods.permanentGoblins)
   const sealed = run.pieces.filter((p) => isSealed(run, p.id, yard))
   const yardStart = (yard - 1) * 3
@@ -34,6 +35,11 @@ export function WagerScreen({ run, dispatch }: { run: RunState; dispatch: (a: Ga
           {T.wager.target}: <b className="font-serif text-2xl text-goblin">{formatNumber(targetFor(run, index))}</b> · 👹 {T.wager.goblins(goblins + (boss ? 0 : 0))}
           {boss ? ' (그중 하나는 대장)' : ''}
         </p>
+        {!boss && yardBoss && (
+          <p className="mt-2 rounded border border-goblin/40 bg-goblin/5 px-2 py-1 text-sm">
+            이번 마당의 대장: <b className="text-goblin">{yardBoss.glyph} {yardBoss.name}</b> — {yardBoss.rule}
+          </p>
+        )}
         {boss && (
           <div className="mt-3 rounded-lg border-2 border-goblin bg-goblin/10 p-3">
             <p className="font-serif text-lg font-black text-goblin">
